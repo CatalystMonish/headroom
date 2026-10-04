@@ -29,11 +29,7 @@
   li { margin: 0 0 8px; }
   footer { padding: 40px 16px 56px; color: var(--muted); font-size: 0.85rem; }
 
-  /* the logo, on a soft glow */
-  .mark { position: relative; display: inline-block; color: var(--accent); }
-  .mark::before { content: ""; position: absolute; inset: -36px; border-radius: 50%; z-index: -1;
-    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 30%, transparent), transparent 68%); }
-  .logo { width: 92px; height: 92px; display: block; }
+  .logo { width: 88px; height: 88px; display: block; margin: 0 auto; border-radius: 20px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
 
   /* a little menu bar: the dials fill up once, then drift a few % like live gauges */
   .bar { display: inline-flex; align-items: center; gap: 18px; margin: 36px auto 10px; padding: 10px 18px; border-radius: 16px;
@@ -69,15 +65,7 @@
 </head>
 <body>
 <main>
-  <span class="mark">
-    <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-linecap="round">
-        <path d="M23.13 82.87A38 38 0 1 1 76.87 82.87" stroke-width="12"/>
-        <path d="M50 56L66.7 36.1" stroke-width="9"/>
-      </g>
-      <circle cx="50" cy="56" r="8.5" fill="currentColor"/>
-    </svg>
-  </span>
+  <img class="logo" src="favicon-tile.svg" alt="" width="88" height="88">
   <h1>Headroom</h1>
   <p class="lede">Your Claude usage limits, live in the macOS menu bar.</p>
 
