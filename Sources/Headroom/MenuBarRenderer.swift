@@ -2,12 +2,27 @@ import AppKit
 
 // Draws the status item. With nothing pinned it's the logo; once any stat is
 // pinned, the stats replace the icon, in the chosen style. Colored styles use
-// non-template content, so neutral parts are drawn in labelColor resolved
-// against the menubar's own (light/dark) appearance.
+// non-template content, so neutral parts use plain colors picked for the
+// menubar's light/dark appearance (see Ink).
 @MainActor
 enum MenuBarRenderer {
-	private static let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-	private static let boldFont = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .semibold)
+	// Text / Color styles use the same 11pt size as the Meter+% values
+	private static let font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+	private static let boldFont = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+
+	// Neutral colors for the drawn (non-template) styles. Semantic colors like
+	// secondaryLabelColor resolve to vibrancy-blend values in the live menubar and
+	// come out dark in a plain image, so pick plain colors for its light/dark.
+	private struct Ink {
+		let primary: NSColor, secondary: NSColor, track: NSColor
+		init(_ appearance: NSAppearance) {
+			let dark = [.darkAqua, .vibrantDark].contains(appearance.bestMatch(from: [.aqua, .darkAqua, .vibrantLight, .vibrantDark]))
+			let base: NSColor = dark ? .white : .black
+			primary = base.withAlphaComponent(dark ? 1 : 0.85)
+			secondary = base.withAlphaComponent(dark ? 0.6 : 0.5)
+			track = base.withAlphaComponent(dark ? 0.25 : 0.2)
+		}
+	}
 
 	// The logo, as a template image so the menubar tints it.
 	private static let icon = Logo.image(size: 16, template: true)
@@ -64,6 +79,7 @@ enum MenuBarRenderer {
 		let warnText = NSAttributedString(string: "!", attributes: [.font: NSFont.boldSystemFont(ofSize: 12), .foregroundColor: NSColor.systemOrange])
 		let width = x - gap + (warn ? warnText.size().width + 4 : 0)
 
+		let ink = Ink(appearance)
 		let img = NSImage(size: NSSize(width: ceil(width), height: h), flipped: false) { _ in
 			appearance.performAsCurrentDrawingAppearance {
 				for c in cells {
@@ -75,14 +91,14 @@ enum MenuBarRenderer {
 					track.appendArc(withCenter: center, radius: r, startAngle: start, endAngle: -45, clockwise: true)
 					track.lineWidth = line
 					track.lineCapStyle = .round
-					NSColor.labelColor.withAlphaComponent(0.25).setStroke()
+					ink.track.setStroke()
 					track.stroke()
 					if c.stat.percent > 0 {
 						let arc = NSBezierPath()
 						arc.appendArc(withCenter: center, radius: r, startAngle: start, endAngle: end, clockwise: true)
 						arc.lineWidth = line
 						arc.lineCapStyle = .round
-						valueColor(c.stat).setStroke()
+						valueColor(c.stat, dimmed: ink.secondary).setStroke()
 						arc.stroke()
 					}
 					// needle + hub
@@ -92,15 +108,15 @@ enum MenuBarRenderer {
 					needle.line(to: NSPoint(x: center.x + cos(a) * len, y: center.y + sin(a) * len))
 					needle.lineWidth = 1.3
 					needle.lineCapStyle = .round
-					NSColor.labelColor.setStroke()
+					ink.primary.setStroke()
 					needle.stroke()
-					NSColor.labelColor.setFill()
+					ink.primary.setFill()
 					NSBezierPath(ovalIn: NSRect(x: center.x - 1.4, y: center.y - 1.4, width: 2.8, height: 2.8)).fill()
 
 					let tx = c.x + d + 3
-					let label = NSAttributedString(string: c.stat.short, attributes: [.font: labelFont, .foregroundColor: NSColor.secondaryLabelColor])
+					let label = NSAttributedString(string: c.stat.short, attributes: [.font: labelFont, .foregroundColor: ink.secondary])
 					label.draw(at: NSPoint(x: tx, y: h - label.size().height + 1))
-					let value = NSAttributedString(string: c.stat.value, attributes: [.font: valueFont, .foregroundColor: NSColor.labelColor])
+					let value = NSAttributedString(string: c.stat.value, attributes: [.font: valueFont, .foregroundColor: ink.primary])
 					value.draw(at: NSPoint(x: tx, y: -1))
 				}
 				if warn { warnText.draw(at: NSPoint(x: width - warnText.size().width, y: (h - warnText.size().height) / 2)) }
@@ -112,8 +128,8 @@ enum MenuBarRenderer {
 		return img
 	}
 
-	private static func valueColor(_ s: UsageStat) -> NSColor {
-		s.dimmed ? .secondaryLabelColor : ClaudeUsage.severityColor(s.percent)
+	private static func valueColor(_ s: UsageStat, dimmed: NSColor = .secondaryLabelColor) -> NSColor {
+		s.dimmed ? dimmed : ClaudeUsage.severityColor(s.percent)
 	}
 
 	private static func warning() -> NSAttributedString {
@@ -153,24 +169,25 @@ enum MenuBarRenderer {
 		let warnText = NSAttributedString(string: "!", attributes: [.font: NSFont.boldSystemFont(ofSize: 12), .foregroundColor: NSColor.systemOrange])
 		let width = x - gap + (warn ? warnText.size().width + 4 : 0)
 
+		let ink = Ink(appearance)
 		let img = NSImage(size: NSSize(width: ceil(width), height: h), flipped: false) { _ in
 			appearance.performAsCurrentDrawingAppearance {
 				for c in cells {
-					let label = NSAttributedString(string: c.stat.short, attributes: [.font: labelFont, .foregroundColor: NSColor.labelColor])
+					let label = NSAttributedString(string: c.stat.short, attributes: [.font: labelFont, .foregroundColor: ink.primary])
 					let ls = label.size()
 					label.draw(at: NSPoint(x: c.x + (c.w - ls.width) / 2, y: h - ls.height + 1))
 
 					let track = NSRect(x: c.x, y: 2, width: c.w, height: barH)
-					NSColor.labelColor.withAlphaComponent(0.25).setFill()
+					ink.track.setFill()
 					NSBezierPath(roundedRect: track, xRadius: barH / 2, yRadius: barH / 2).fill()
 					if c.stat.percent > 0 {
 						var fill = track
 						fill.size.width = max(barH, c.w * c.stat.percent / 100)
-						valueColor(c.stat).setFill()
+						valueColor(c.stat, dimmed: ink.secondary).setFill()
 						NSBezierPath(roundedRect: fill, xRadius: barH / 2, yRadius: barH / 2).fill()
 					}
 					if showValue {
-						let v = NSAttributedString(string: c.stat.value, attributes: [.font: valueFont, .foregroundColor: NSColor.labelColor])
+						let v = NSAttributedString(string: c.stat.value, attributes: [.font: valueFont, .foregroundColor: ink.primary])
 						v.draw(at: NSPoint(x: c.x + c.w + 3, y: (h - v.size().height) / 2))
 					}
 				}

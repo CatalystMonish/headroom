@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://catalystmonish.github.io/headroom/sitemap.xml

@@ -54,6 +54,7 @@ profile (`NOTARY_PROFILE`; set one up with `xcrun notarytool store-credentials`)
 no certificate it falls back to an ad-hoc signature.
 
 The app icon is generated from `assets/logo.svg`: `npm install && npm run icon`.
+The website images are rendered from the real views: `./scripts/screens.sh`.
 
 | File | Role |
 |------|------|

@@ -15,7 +15,7 @@ const M = 100, BG = S - M * 2, BR = Math.round(BG * 0.2237) // squircle inset + 
 const LOGO = 520 // logo box, centered
 
 const logo = readFileSync(join(HERE, '..', 'assets', 'logo.svg'), 'utf8')
-	.replace(/fill="[^"]*"/, 'fill="#ffffff"')
+	.replaceAll('#D97757', '#ffffff')
 	.replace('<svg ', `<svg x="${(S - LOGO) / 2}" y="${(S - LOGO) / 2}" width="${LOGO}" height="${LOGO}" `)
 
 const svg = `<svg width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">
