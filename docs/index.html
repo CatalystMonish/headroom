@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Headroom: Claude usage in your Mac menu bar</title>
 <meta name="description" content="A free, open-source macOS menu bar app that shows your Claude usage limits.">
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-tile.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="app-icon.png">
 <style>
   @property --n { syntax: "<integer>"; inherits: false; initial-value: 0; }
   :root { --bg: #faf9f7; --fg: #1a1a1d; --muted: #5d5d66; --line: #e7e5e1; --accent: #c96442; }
@@ -28,38 +29,42 @@
   li { margin: 0 0 8px; }
   footer { padding: 40px 16px 56px; color: var(--muted); font-size: 0.85rem; }
 
-  /* the logo: a gauge whose needle revs, over a soft pulsing glow */
+  /* the logo, on a soft glow */
   .mark { position: relative; display: inline-block; color: var(--accent); }
   .mark::before { content: ""; position: absolute; inset: -36px; border-radius: 50%; z-index: -1;
-    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 38%, transparent), transparent 68%);
-    animation: pulse 2.4s ease-in-out infinite alternate; }
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 30%, transparent), transparent 68%); }
   .logo { width: 92px; height: 92px; display: block; }
-  .logo .needle { transform-box: view-box; transform-origin: 50px 56px; transform: rotate(40deg); animation: rev 2.4s ease-in-out infinite alternate; }
-  @keyframes rev { from { transform: rotate(-105deg); } to { transform: rotate(100deg); } }
-  @keyframes pulse { from { opacity: .45; transform: scale(.9); } to { opacity: 1; transform: scale(1.05); } }
 
-  /* a little menu bar whose dials fill up, hold, and reset */
+  /* a little menu bar: the dials fill up once, then drift a few % like live gauges */
   .bar { display: inline-flex; align-items: center; gap: 18px; margin: 36px auto 10px; padding: 10px 18px; border-radius: 16px;
     background: #1c1c1f; color: #f2f2f4; box-shadow: 0 14px 40px rgba(0, 0, 0, .28); max-width: 100%; }
   .dial { display: flex; align-items: center; gap: 7px; text-align: left; }
   .dial svg { width: 36px; height: 36px; flex: none; }
   .dial path { fill: none; stroke-width: 11; stroke-linecap: round; }
   .dial .track { stroke: rgba(255, 255, 255, .18); }
-  .dial .arc { stroke: var(--c); stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--v)); animation: fill 6s ease-in-out var(--d) infinite both; }
+  .dial .arc { stroke: var(--c); stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--v));
+    animation: fill 1.4s ease-out var(--d) both, fill-drift 3.5s ease-in-out calc(var(--d) + 1.4s) infinite alternate; }
   .dial .needle { stroke: #fff; stroke-width: 7; stroke-linecap: round; transform-box: view-box; transform-origin: 50px 56px;
-    transform: rotate(calc(-135deg + 2.7deg * var(--v))); animation: point 6s ease-in-out var(--d) infinite both; }
+    transform: rotate(calc(-135deg + 2.7deg * var(--v)));
+    animation: point 1.4s ease-out var(--d) both, point-drift 3.5s ease-in-out calc(var(--d) + 1.4s) infinite alternate; }
   .dial circle { fill: #fff; }
   .dial small { display: block; font-size: 11px; line-height: 1.2; color: #a1a1aa; }
   .dial b { display: block; font-size: 17px; line-height: 1.1; font-variant-numeric: tabular-nums; min-width: 3ch;
-    --n: var(--v); counter-reset: n var(--n); animation: count 6s ease-in-out var(--d) infinite both; }
+    --n: var(--v); counter-reset: n var(--n);
+    animation: count 1.4s ease-out var(--d) both, count-drift 3.5s ease-in-out calc(var(--d) + 1.4s) infinite alternate; }
   .dial b::after { content: counter(n) "%"; }
   .clock { font-size: 15px; color: #d4d4d8; padding-left: 4px; }
   .caption { color: var(--muted); font-size: 0.9rem; margin: 0 0 28px; }
-  @keyframes fill { 0%, 10% { stroke-dashoffset: 100; } 40%, 82% { stroke-dashoffset: calc(100 - var(--v)); } 100% { stroke-dashoffset: 100; } }
-  @keyframes point { 0%, 10% { transform: rotate(-135deg); } 40%, 82% { transform: rotate(calc(-135deg + 2.7deg * var(--v))); } 100% { transform: rotate(-135deg); } }
-  @keyframes count { 0%, 10% { --n: 0; } 40%, 82% { --n: var(--v); } 100% { --n: 0; } }
+  /* once: 0 -> value */
+  @keyframes fill { from { stroke-dashoffset: 100; } to { stroke-dashoffset: calc(100 - var(--v)); } }
+  @keyframes point { from { transform: rotate(-135deg); } to { transform: rotate(calc(-135deg + 2.7deg * var(--v))); } }
+  @keyframes count { from { --n: 0; } to { --n: var(--v); } }
+  /* then forever: value <-> value + 3 */
+  @keyframes fill-drift { to { stroke-dashoffset: calc(97 - var(--v)); } }
+  @keyframes point-drift { to { transform: rotate(calc(-135deg + 2.7deg * (var(--v) + 3))); } }
+  @keyframes count-drift { to { --n: calc(var(--v) + 3); } }
   @media (max-width: 420px) { .clock { display: none; } .bar { gap: 14px; padding: 10px 14px; } }
-  @media (prefers-reduced-motion: reduce) { .mark::before, .logo .needle, .dial .arc, .dial .needle, .dial b { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .dial .arc, .dial .needle, .dial b { animation: none; } }
 </style>
 </head>
 <body>
@@ -68,7 +73,7 @@
     <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
       <g fill="none" stroke="currentColor" stroke-linecap="round">
         <path d="M23.13 82.87A38 38 0 1 1 76.87 82.87" stroke-width="12"/>
-        <line class="needle" x1="50" y1="56" x2="50" y2="30" stroke-width="9"/>
+        <path d="M50 56L66.7 36.1" stroke-width="9"/>
       </g>
       <circle cx="50" cy="56" r="8.5" fill="currentColor"/>
     </svg>
