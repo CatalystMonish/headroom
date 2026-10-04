@@ -1,0 +1,7 @@
+.build/
+.swiftpm/
+dist/
+*.app
+node_modules/
+icon/AppIcon.iconset/
+.DS_Store

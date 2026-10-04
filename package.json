@@ -1,0 +1,8 @@
+{
+  "name": "headroom-tools",
+  "private": true,
+  "type": "module",
+  "description": "Build helpers for Headroom (app icon). The app itself is Swift.",
+  "scripts": { "icon": "node icon/make-icon.mjs" },
+  "devDependencies": { "sharp": "^0.33.5" }
+}

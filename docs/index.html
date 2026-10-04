@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Headroom: Claude usage limits in your Mac menu bar (free, open source)</title>
+<meta name="description" content="Headroom is a free, open-source macOS menu bar app that shows your Claude subscription usage limits: the 5-hour session, weekly and per-model caps, with reset countdowns.">
+<link rel="canonical" href="https://catalystmonish.github.io/headroom/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#0f0f12">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Headroom">
+<meta property="og:title" content="Headroom: Claude usage limits in your Mac menu bar">
+<meta property="og:description" content="See your Claude session, weekly and per-model limits at a glance. Free, open source, signed and notarized.">
+<meta property="og:url" content="https://catalystmonish.github.io/headroom/">
+<meta property="og:image" content="https://catalystmonish.github.io/headroom/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Headroom: Claude usage limits in your Mac menu bar">
+<meta name="twitter:description" content="See your Claude session, weekly and per-model limits at a glance. Free and open source.">
+<meta name="twitter:image" content="https://catalystmonish.github.io/headroom/og.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Headroom",
+  "description": "A macOS menu bar app that shows your Claude subscription usage limits: the 5-hour session, weekly and per-model caps, with reset countdowns.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS 14 or later",
+  "softwareVersion": "1.0.0",
+  "url": "https://catalystmonish.github.io/headroom/",
+  "downloadUrl": "https://github.com/CatalystMonish/headroom/releases/latest/download/Headroom.dmg",
+  "image": "https://catalystmonish.github.io/headroom/screenshot.png",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Monish Meher", "url": "https://github.com/CatalystMonish" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Is Headroom made by Anthropic?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Headroom is an independent, open-source app. It is not affiliated with or endorsed by Anthropic. Claude and Anthropic are trademarks of Anthropic, PBC." } },
+    { "@type": "Question", "name": "Where do the numbers come from?",
+      "acceptedAnswer": { "@type": "Answer", "text": "From the same usage data that claude.ai (Settings, Usage) and Claude Code's /usage command show, read with your own login. Anthropic hasn't documented this endpoint, so it may change." } },
+    { "@type": "Question", "name": "Do I need an API key?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. If you use Claude Code, Headroom reads its saved login from the macOS Keychain; macOS asks your permission once. You can also paste an OAuth token, which Headroom stores in your Keychain." } },
+    { "@type": "Question", "name": "Does Headroom collect any data?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. There are no analytics and no servers. The only network requests go to api.anthropic.com to read your usage." } },
+    { "@type": "Question", "name": "Which Macs does it run on?",
+      "acceptedAnswer": { "@type": "Answer", "text": "macOS 14 Sonoma or later, on Apple Silicon and Intel Macs. The app is signed and notarized by Apple." } },
+    { "@type": "Question", "name": "Is it free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Headroom is free and open source under the MIT license." } }
+  ]
+}
+</script>
+
+<style>
+  :root {
+    --bg: #faf9f7; --fg: #1a1a1d; --muted: #5d5d66; --card: #ffffff; --line: #e7e5e1;
+    --accent: #c96442; --accent-fg: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f0f12; --fg: #f2f2f4; --muted: #a1a1aa; --card: #18181c; --line: #2a2a30; --accent: #d97757; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main, footer { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  a { color: var(--accent); }
+  header.hero { text-align: center; padding: 72px 0 32px; }
+  .logo { width: 64px; height: 64px; }
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1; margin: 16px 0 12px; letter-spacing: -0.02em; }
+  .lede { font-size: 1.2rem; color: var(--muted); max-width: 620px; margin: 0 auto 28px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 12px 22px; border-radius: 12px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--fg); }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  .fine { color: var(--muted); font-size: 0.9rem; margin-top: 14px; }
+  .shot { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); margin: 24px 0 8px; }
+  section { padding: 48px 0 8px; }
+  h2 { font-size: 1.7rem; margin: 0 0 20px; letter-spacing: -0.01em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+  .card p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+  .styles { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+  .styles img { width: 100%; max-width: 341px; height: auto; justify-self: center; }
+  @media (max-width: 720px) { .styles { grid-template-columns: 1fr; } }
+  ol.steps { padding-left: 1.2em; } ol.steps li { margin: 0 0 10px; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 0 0 10px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+  code { font-size: 0.9em; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+  footer { padding: 48px 16px 64px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <img class="logo" src="favicon.svg" alt="" width="64" height="64">
+    <h1>Your Claude usage limits,<br>live in the macOS menu bar</h1>
+    <p class="lede">Headroom shows how much of your Claude plan is left: the 5-hour session, the weekly limit and per-model caps, with reset countdowns. One glance, no browser tab.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/CatalystMonish/headroom/releases/latest/download/Headroom.dmg">Download for macOS</a>
+      <a class="btn" href="https://github.com/CatalystMonish/headroom">View on GitHub</a>
+    </div>
+    <p class="fine">Free · Open source (MIT) · Signed &amp; notarized · macOS 14+ · Apple Silicon &amp; Intel</p>
+    <img class="shot" src="screenshot.png" width="1600" height="868" alt="Headroom in the macOS menu bar: three dial gauges for the session, weekly and Fable limits, above the Headroom popup listing each limit with a colored meter, percentage and reset countdown.">
+  </header>
+
+  <section aria-labelledby="features">
+    <h2 id="features">Everything your usage page shows, one click away</h2>
+    <div class="grid">
+      <div class="card"><h3>Session &amp; weekly limits</h3><p>Your rolling 5-hour session and 7-day limits, as meters that turn amber at 70% and red at 90%.</p></div>
+      <div class="card"><h3>Per-model caps</h3><p>Separate weekly caps, like Fable's, show up automatically as soon as your plan has them.</p></div>
+      <div class="card"><h3>Pin what matters</h3><p>Tick any stat to put it in the menu bar. With nothing ticked, Headroom stays a small logo.</p></div>
+      <div class="card"><h3>Five display styles</h3><p>Plain text, colored text, mini meters, meters with percentages, or speedometer-style dials.</p></div>
+      <div class="card"><h3>Reset countdowns</h3><p>Know exactly when each limit resets. If a refresh fails, the last numbers stay up with a warning.</p></div>
+      <div class="card"><h3>Private by design</h3><p>No account, no analytics, no servers. It only talks to api.anthropic.com, using your own login.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="styles">
+    <div class="styles">
+      <div>
+        <h2 id="styles">Pick a menu bar style</h2>
+        <p>Choose how pinned stats look: <strong>Text</strong>, <strong>Color</strong>, <strong>Meter</strong>, <strong>Meter + %</strong> or <strong>Dial</strong>. Every style adapts to light and dark menu bars.</p>
+      </div>
+      <img src="styles.png" width="682" height="400" loading="lazy" alt="The five Headroom menu bar styles: text, colored text, mini meters, meters with percentages, and dial gauges.">
+    </div>
+  </section>
+
+  <section aria-labelledby="how">
+    <h2 id="how">How it works</h2>
+    <ol class="steps">
+      <li><strong>Download</strong> the DMG, drag Headroom to Applications and open it.</li>
+      <li><strong>Sign in</strong>: if you use Claude Code, Headroom picks up its login from your Keychain. Otherwise, paste an OAuth token under <em>Account</em>.</li>
+      <li><strong>Pin</strong> the limits you care about and choose a style. Headroom refreshes every minute.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq">FAQ</h2>
+    <details><summary>Is Headroom made by Anthropic?</summary><p>No. Headroom is an independent, open-source app. It is not affiliated with or endorsed by Anthropic. Claude and Anthropic are trademarks of Anthropic, PBC.</p></details>
+    <details><summary>Where do the numbers come from?</summary><p>From the same usage data that claude.ai (Settings → Usage) and Claude Code's <code>/usage</code> command show, read with your own login. Anthropic hasn't documented this endpoint, so it may change.</p></details>
+    <details><summary>Do I need an API key?</summary><p>No. If you use Claude Code, Headroom reads its saved login from the macOS Keychain; macOS asks your permission once. You can also paste an OAuth token, which Headroom stores in your Keychain.</p></details>
+    <details><summary>Does Headroom collect any data?</summary><p>No. There are no analytics and no servers. The only network requests go to api.anthropic.com to read your usage.</p></details>
+    <details><summary>Which Macs does it run on?</summary><p>macOS 14 Sonoma or later, on Apple Silicon and Intel Macs. The app is signed and notarized by Apple.</p></details>
+    <details><summary>Is it free?</summary><p>Yes. Headroom is free and open source under the MIT license. Contributions are welcome on <a href="https://github.com/CatalystMonish/headroom">GitHub</a>.</p></details>
+  </section>
+</main>
+<footer>
+  <p>Headroom is free and open source (MIT) · <a href="https://github.com/CatalystMonish/headroom">GitHub</a> · Made by <a href="https://github.com/CatalystMonish">Monish Meher</a></p>
+  <p>Unofficial. Not affiliated with or endorsed by Anthropic. Claude and Anthropic are trademarks of Anthropic, PBC.</p>
+</footer>
+</body>
+</html>
