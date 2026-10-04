@@ -22,12 +22,11 @@ const panel = await sharp(Buffer.from(`<svg width="${pm.width}" height="${pm.hei
 {
 	const bar = `${out}/bar-dark-dial.png`, bm = await meta(bar)
 	const W = 1600, stripH = 48, H = stripH + 24 + pm.height + 70
-	const clockW = 250, barX = W - 40 - clockW - 28 - bm.width, barY = Math.round((stripH - bm.height) / 2)
+	const barX = W - 40 - bm.width, barY = Math.round((stripH - bm.height) / 2)
 	const px = Math.min(W - 24 - pm.width, Math.round(barX + bm.width / 2 - pm.width / 2)), py = stripH + 24
 	const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${bg(W, H)}
   <rect width="${W}" height="${stripH}" fill="#000" fill-opacity="0.45"/>
   <rect x="${barX - 12}" y="5" width="${bm.width + 24}" height="${stripH - 10}" rx="10" fill="#fff" fill-opacity="0.14"/>
-  <text x="${W - 40}" y="${stripH / 2 + 9}" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#f2f2f2">Sun Oct 4  9:41 AM</text>
   <rect x="${px + 10}" y="${py + 26}" width="${pm.width - 20}" height="${pm.height - 10}" rx="24" fill="#000" fill-opacity="0.6" filter="url(#sh)"/>
 </svg>`
 	await sharp(Buffer.from(svg)).composite([{ input: bar, left: barX, top: barY }, { input: panel, left: px, top: py }])

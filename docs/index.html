@@ -24,7 +24,7 @@
   .fine { color: var(--muted); font-size: 0.9rem; margin: 14px 0 0; }
   img.shot { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); margin: 48px 0 0; }
   h2 { font-size: 1.4rem; margin: 56px 0 16px; }
-  img.styles { width: 100%; max-width: 318px; height: auto; }
+  img.styles { width: 100%; max-width: 360px; height: auto; }
   ol { display: inline-block; text-align: left; padding-left: 1.2em; margin: 0; }
   li { margin: 0 0 8px; }
   footer { padding: 40px 16px 56px; color: var(--muted); font-size: 0.85rem; }
@@ -49,7 +49,8 @@
     --n: var(--v); counter-reset: n var(--n);
     animation: count 1.4s ease-out var(--d) both, count-drift 3.5s ease-in-out calc(var(--d) + 1.4s) infinite alternate; }
   .dial b::after { content: counter(n) "%"; }
-  .clock { font-size: 15px; color: #d4d4d8; padding-left: 4px; }
+  .clock { font-size: 15px; color: #d4d4d8; padding-left: 4px; white-space: nowrap; }
+  .clock:empty { display: none; }
   .caption { color: var(--muted); font-size: 0.9rem; margin: 0 0 28px; }
   /* once: 0 -> value */
   @keyframes fill { from { stroke-dashoffset: 100; } to { stroke-dashoffset: calc(100 - var(--v)); } }
@@ -82,17 +83,17 @@
       <svg viewBox="0 0 100 100"><path class="track" d="M23.13 82.87A38 38 0 1 1 76.87 82.87"/><path class="arc" pathLength="100" d="M23.13 82.87A38 38 0 1 1 76.87 82.87"/><line class="needle" x1="50" y1="56" x2="50" y2="30"/><circle cx="50" cy="56" r="7"/></svg>
       <span><small>Fable</small><b></b></span>
     </div>
-    <span class="clock">9:41</span>
+    <span class="clock" id="clock"></span>
   </div>
   <p class="caption">Green, amber, red: know before you hit the limit.</p>
 
   <a class="btn" href="https://github.com/CatalystMonish/headroom/releases/latest/download/Headroom.dmg">Download for macOS</a>
   <p class="fine">Free &amp; open source · macOS 14+ · <a href="https://github.com/CatalystMonish/headroom">GitHub</a></p>
 
-  <img class="shot" src="preview.png" width="1600" height="868" alt="Headroom showing session, weekly and Fable limits in the menu bar and its popup.">
+  <img class="shot" src="preview.png" width="1600" height="894" alt="Headroom showing session, weekly and Fable limits in the menu bar and its popup.">
 
   <h2>Pick a style</h2>
-  <img class="styles" src="bar-styles.png" width="636" height="400" alt="The five menu bar styles: text, color, meter, meter with percent, and dial.">
+  <img class="styles" src="bar-styles.png" width="720" height="400" alt="The five menu bar styles: text, color, meter, meter with percent, and dial.">
 
   <h2>Get started</h2>
   <ol>
@@ -102,5 +103,13 @@
   </ol>
 </main>
 <footer>Unofficial. Not affiliated with or endorsed by Anthropic.</footer>
+<script>
+  // the demo menu bar shows your current date and time, like the real one
+  const clock = document.getElementById("clock")
+  const fmt = new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+  const tick = () => { clock.textContent = fmt.format(new Date()).replace(/,/g, "") }
+  tick()
+  setInterval(tick, 15000)
+</script>
 </body>
 </html>

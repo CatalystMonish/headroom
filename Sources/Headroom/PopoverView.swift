@@ -31,6 +31,9 @@ struct PopoverView: View {
 							StatRow(stat: stat, pinned: Binding(
 								get: { usage.isPinned(stat.id) },
 								set: { usage.setPinned(stat.id, $0) }
+							), timeLeft: Binding(
+								get: { usage.showsTimeLeft(stat.id) },
+								set: { usage.setShowsTimeLeft(stat.id, $0) }
 							))
 						}
 					}
@@ -38,8 +41,9 @@ struct PopoverView: View {
 				if let shares = breakdownText {
 					Text(shares).font(.caption2).foregroundStyle(.secondary)
 				}
-				Text(usage.pinned.isEmpty ? "Tick a stat to show it in the menu bar." : "Ticked stats show in the menu bar.")
+				Text("Tick a stat to show it in the menu bar. The clock shows its time left instead of its name.")
 					.font(.caption2).foregroundStyle(.tertiary)
+					.fixedSize(horizontal: false, vertical: true)
 			}
 
 			VStack(alignment: .leading, spacing: 4) {
@@ -132,6 +136,7 @@ private struct AccountView: View {
 private struct StatRow: View {
 	let stat: UsageStat
 	@Binding var pinned: Bool
+	@Binding var timeLeft: Bool
 
 	var body: some View {
 		HStack(spacing: 8) {
@@ -139,7 +144,15 @@ private struct StatRow: View {
 				.toggleStyle(.checkbox)
 				.labelsHidden()
 				.help("Show in menu bar")
-			Text(stat.label).font(.caption).lineLimit(1).frame(width: 84, alignment: .leading)
+			// menubar label: time left (on) or the stat's name (off)
+			Button { timeLeft.toggle() } label: {
+				Image(systemName: timeLeft && stat.resetsAt != nil ? "clock.fill" : "clock")
+			}
+			.buttonStyle(.borderless)
+			.foregroundStyle(timeLeft && stat.resetsAt != nil ? .primary : .tertiary)
+			.disabled(stat.resetsAt == nil)
+			.help(timeLeft ? "Menu bar shows the time left. Click to show the name instead." : "Menu bar shows the name. Click to show the time left instead.")
+			Text(stat.label).font(.caption).lineLimit(1).frame(width: 78, alignment: .leading)
 			Meter(percent: stat.percent, color: stat.dimmed ? .secondary : Color(nsColor: ClaudeUsage.severityColor(stat.percent)))
 			Text(stat.value).font(.caption.monospacedDigit()).bold()
 				.foregroundStyle(stat.dimmed ? .secondary : .primary)

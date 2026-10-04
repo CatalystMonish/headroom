@@ -27,8 +27,13 @@ MainActor.assumeIsolated {
 		let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 		let b = item.button!
 		b.appearance = NSAppearance(named: mode)
+		// the menubar gets its stats from the store, exactly as the app does
+		// (pinned ones only, labelled with their time left by default)
+		let bar = UsageStore()
+		bar.snapshot = snap
+		bar.pinned = pins
 		var cases: [(String, [UsageStat], BarStyle)] = [("logo", [], .meterText)]
-		for s in BarStyle.allCases { cases.append((s.rawValue, snap.stats.filter { pins.contains($0.id) }, s)) }
+		for s in BarStyle.allCases { cases.append((s.rawValue, bar.pinnedStats, s)) }
 		for (label, stats, style) in cases {
 			for _ in 0..<2 { // first pass warms up the button
 				MenuBarRenderer.apply(to: b, stats: stats, style: style, warn: false, tooltip: "")

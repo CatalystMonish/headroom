@@ -11,7 +11,7 @@ import Foundation
 struct UsageStat: Identifiable, Equatable {
 	let id: String          // "session" | "weekly" | "model:<name>" | "credits"
 	let label: String       // popup row label, e.g. "Weekly (7d)"
-	let short: String       // menubar label, e.g. "7d"
+	var short: String       // menubar label, e.g. "7d" (or the time left, see UsageStore)
 	let percent: Double     // 0-100
 	let value: String       // "60%", "$0/$100", "OFF"
 	let resetsAt: Date?
