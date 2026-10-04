@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/icon.png" width="96" alt="Headroom icon"></p>
+<p align="center"><img src="docs/app-icon.png" width="96" alt="Headroom icon"></p>
 
 # Headroom
 
@@ -11,7 +11,7 @@ with reset countdowns.
 
 Free · open source (MIT) · signed & notarized · macOS 14+ · Apple Silicon & Intel
 
-![Headroom in the menu bar](docs/screenshot.png)
+![Headroom in the menu bar](docs/preview.png)
 
 > Unofficial. Not affiliated with or endorsed by Anthropic. Claude and Anthropic are
 > trademarks of Anthropic, PBC.

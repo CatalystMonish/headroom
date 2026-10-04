@@ -1,6 +1,6 @@
 // Composes the website images from the offscreen renders (see scripts/screens.sh):
-//   docs/screenshot.png  menubar strip (Dial style) + the popup under it
-//   docs/styles.png      the five menubar styles
+//   docs/preview.png     menubar strip (Dial style) + the popup under it
+//   docs/bar-styles.png  the five menubar styles
 import sharp from 'sharp'
 
 const [, , out, docs] = process.argv
@@ -31,8 +31,8 @@ const panel = await sharp(Buffer.from(`<svg width="${pm.width}" height="${pm.hei
   <rect x="${px + 10}" y="${py + 26}" width="${pm.width - 20}" height="${pm.height - 10}" rx="24" fill="#000" fill-opacity="0.6" filter="url(#sh)"/>
 </svg>`
 	await sharp(Buffer.from(svg)).composite([{ input: bar, left: barX, top: barY }, { input: panel, left: px, top: py }])
-		.png({ compressionLevel: 9 }).toFile(`${docs}/screenshot.png`)
-	console.log('wrote docs/screenshot.png', W, H)
+		.png({ compressionLevel: 9 }).toFile(`${docs}/preview.png`)
+	console.log('wrote docs/preview.png', W, H)
 }
 
 // the five menubar styles, as labeled dark strips
@@ -48,6 +48,6 @@ const panel = await sharp(Buffer.from(`<svg width="${pm.width}" height="${pm.hei
 		comps.push({ input: `${out}/bar-dark-${s}.png`, left: labelW, top: y + Math.round((rowH - ms[i].height) / 2) })
 	})
 	await sharp(Buffer.from(`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${rows}</svg>`)).composite(comps)
-		.png({ compressionLevel: 9 }).toFile(`${docs}/styles.png`)
-	console.log('wrote docs/styles.png', W, H)
+		.png({ compressionLevel: 9 }).toFile(`${docs}/bar-styles.png`)
+	console.log('wrote docs/bar-styles.png', W, H)
 }

@@ -45,5 +45,5 @@ for (const [px, name] of sizes) await sharp(master).resize(px, px).png().toFile(
 execFileSync('iconutil', ['-c', 'icns', setDir, '-o', join(HERE, 'AppIcon.icns')])
 rmSync(setDir, { recursive: true, force: true })
 // 512px PNG for the website / README
-await sharp(master).resize(512, 512).png().toFile(join(HERE, '..', 'docs', 'icon.png'))
-console.log('wrote icon/AppIcon.icns and docs/icon.png')
+await sharp(master).resize(512, 512).png().toFile(join(HERE, '..', 'docs', 'app-icon.png'))
+console.log('wrote icon/AppIcon.icns and docs/app-icon.png')
