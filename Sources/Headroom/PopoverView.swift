@@ -17,8 +17,8 @@ struct PopoverView: View {
 				status
 				Button { usage.refresh() } label: { Image(systemName: "arrow.clockwise") }
 					.buttonStyle(.borderless)
-					.disabled(usage.loading)
-					.help("Refresh now")
+					.disabled(usage.loading || !usage.canRefreshNow)
+					.help(usage.canRefreshNow ? "Refresh now" : "Checking every 2 min for a bit, so Anthropic doesn't rate-limit you")
 			}
 
 			if usage.stats.isEmpty {
@@ -89,12 +89,17 @@ struct PopoverView: View {
 		.onAppear { if usage.error == .noToken || usage.error == .reauth { showAccount = true } }
 	}
 
+	// calm wording: a rate limit just means we check a bit less often for now
 	@ViewBuilder private var status: some View {
-		if let e = usage.error {
+		let rateLimited: Bool = { if case .rateLimited = usage.error { true } else { false } }()
+		if let e = usage.error, !rateLimited {
 			Text(usage.isStale ? "stale · \(e.label)" : e.label)
 				.font(.caption2).foregroundStyle(usage.isStale ? .orange : .red)
 		} else if let t = usage.lastUpdated {
-			Text("updated \(t, style: .relative) ago").font(.caption2).foregroundStyle(.secondary)
+			Text(usage.isSlowedDown ? "updated \(t, style: .relative) ago · every 2 min" : "updated \(t, style: .relative) ago")
+				.font(.caption2).foregroundStyle(.secondary)
+		} else if rateLimited {
+			Text("busy · checking every 2 min").font(.caption2).foregroundStyle(.secondary)
 		}
 	}
 

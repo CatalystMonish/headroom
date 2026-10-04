@@ -33,11 +33,13 @@ struct UsageSnapshot: Equatable {
 
 enum UsageError: Error, Equatable {
 	case noToken, reauth, http(Int), offline, badData
+	case rateLimited(retryAfter: TimeInterval?) // HTTP 429, with the server's Retry-After if it sent one
 
 	var label: String {
 		switch self {
 		case .noToken: "NO TOKEN"
 		case .reauth: "RE-AUTH"
+		case .rateLimited: "RATE LIMITED"
 		case .http(let code): "HTTP \(code)"
 		case .offline: "OFFLINE"
 		case .badData: "BAD DATA"
@@ -57,15 +59,17 @@ enum ClaudeUsage {
 		req.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
 		req.setValue("Headroom/1.0 (+https://github.com/CatalystMonish/headroom)", forHTTPHeaderField: "User-Agent")
 		req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-		let data: Data, code: Int
+		let data: Data, http: HTTPURLResponse?
 		do {
 			let (d, resp) = try await URLSession.shared.data(for: req)
 			data = d
-			code = (resp as? HTTPURLResponse)?.statusCode ?? 0
+			http = resp as? HTTPURLResponse
 		} catch {
 			return .failure(.offline)
 		}
+		let code = http?.statusCode ?? 0
 		if code == 401 || code == 403 { return .failure(.reauth) }
+		if code == 429 { return .failure(.rateLimited(retryAfter: http?.value(forHTTPHeaderField: "Retry-After").flatMap(TimeInterval.init))) }
 		guard (200..<300).contains(code) else { return .failure(.http(code)) }
 		guard let snap = try? parse(data) else { return .failure(.badData) }
 		return .success(snap)

@@ -27,13 +27,13 @@ enum MenuBarRenderer {
 	// The logo, as a template image so the menubar tints it.
 	private static let icon = Logo.image(size: 16, template: true)
 
-	static func apply(to button: NSStatusBarButton, stats: [UsageStat], style: BarStyle, warn: Bool, tooltip: String) {
+	static func apply(to button: NSStatusBarButton, stats: [UsageStat], style: BarStyle, tooltip: String) {
 		button.toolTip = tooltip
 
 		if stats.isEmpty {
 			button.image = icon
-			button.imagePosition = warn ? .imageLeading : .imageOnly
-			button.attributedTitle = warn ? warning() : NSAttributedString()
+			button.imagePosition = .imageOnly
+			button.attributedTitle = NSAttributedString()
 			return
 		}
 		switch style {
@@ -41,26 +41,26 @@ enum MenuBarRenderer {
 			button.image = nil
 			button.imagePosition = .noImage
 			button.font = font
-			button.title = stats.map(\.barText).joined(separator: " · ") + (warn ? " !" : "")
+			button.title = stats.map(\.barText).joined(separator: " · ")
 		case .coloredText:
 			button.image = nil
 			button.imagePosition = .noImage
-			button.attributedTitle = coloredTitle(stats, warn: warn)
+			button.attributedTitle = coloredTitle(stats)
 		case .meter, .meterText:
 			button.attributedTitle = NSAttributedString()
-			button.image = meterImage(stats, showValue: style == .meterText, warn: warn,
+			button.image = meterImage(stats, showValue: style == .meterText,
 			                          appearance: button.effectiveAppearance, description: tooltip)
 			button.imagePosition = .imageOnly
 		case .dial:
 			button.attributedTitle = NSAttributedString()
-			button.image = dialImage(stats, warn: warn, appearance: button.effectiveAppearance, description: tooltip)
+			button.image = dialImage(stats, appearance: button.effectiveAppearance, description: tooltip)
 			button.imagePosition = .imageOnly
 		}
 	}
 
 	// One speedometer per stat: a 270° arc in the severity color with a needle,
 	// then the label over the value.
-	private static func dialImage(_ stats: [UsageStat], warn: Bool,
+	private static func dialImage(_ stats: [UsageStat],
 	                              appearance: NSAppearance, description: String) -> NSImage {
 		let labelFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
 		let valueFont = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .semibold)
@@ -76,8 +76,7 @@ enum MenuBarRenderer {
 			cells.append(Cell(stat: st, x: x, textW: tw))
 			x += d + 3 + tw + gap
 		}
-		let warnText = NSAttributedString(string: "!", attributes: [.font: NSFont.boldSystemFont(ofSize: 12), .foregroundColor: NSColor.systemOrange])
-		let width = x - gap + (warn ? warnText.size().width + 4 : 0)
+		let width = x - gap
 
 		let ink = Ink(appearance)
 		let img = NSImage(size: NSSize(width: ceil(width), height: h), flipped: false) { _ in
@@ -119,7 +118,6 @@ enum MenuBarRenderer {
 					let value = NSAttributedString(string: c.stat.value, attributes: [.font: valueFont, .foregroundColor: ink.primary])
 					value.draw(at: NSPoint(x: tx, y: -1))
 				}
-				if warn { warnText.draw(at: NSPoint(x: width - warnText.size().width, y: (h - warnText.size().height) / 2)) }
 			}
 			return true
 		}
@@ -132,25 +130,20 @@ enum MenuBarRenderer {
 		s.dimmed ? dimmed : ClaudeUsage.severityColor(s.percent)
 	}
 
-	private static func warning() -> NSAttributedString {
-		NSAttributedString(string: " !", attributes: [.font: boldFont, .foregroundColor: NSColor.systemOrange])
-	}
-
 	// "5h 0% · 7d 60%" with each value in its severity color
-	private static func coloredTitle(_ stats: [UsageStat], warn: Bool) -> NSAttributedString {
+	private static func coloredTitle(_ stats: [UsageStat]) -> NSAttributedString {
 		let s = NSMutableAttributedString()
 		for (i, st) in stats.enumerated() {
 			if i > 0 { s.append(NSAttributedString(string: " · ", attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor])) }
 			s.append(NSAttributedString(string: st.short + " ", attributes: [.font: font, .foregroundColor: NSColor.labelColor]))
 			s.append(NSAttributedString(string: st.value, attributes: [.font: boldFont, .foregroundColor: valueColor(st)]))
 		}
-		if warn { s.append(warning()) }
 		return s
 	}
 
 	// One mini meter per stat: tiny label over a colored bar, optionally
 	// followed by the value.
-	private static func meterImage(_ stats: [UsageStat], showValue: Bool, warn: Bool,
+	private static func meterImage(_ stats: [UsageStat], showValue: Bool,
 	                               appearance: NSAppearance, description: String) -> NSImage {
 		let labelFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
 		let valueFont = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
@@ -166,8 +159,7 @@ enum MenuBarRenderer {
 			let vw = showValue ? ceil((st.value as NSString).size(withAttributes: [.font: valueFont]).width) + 3 : 0
 			x += w + vw + gap
 		}
-		let warnText = NSAttributedString(string: "!", attributes: [.font: NSFont.boldSystemFont(ofSize: 12), .foregroundColor: NSColor.systemOrange])
-		let width = x - gap + (warn ? warnText.size().width + 4 : 0)
+		let width = x - gap
 
 		let ink = Ink(appearance)
 		let img = NSImage(size: NSSize(width: ceil(width), height: h), flipped: false) { _ in
@@ -191,7 +183,6 @@ enum MenuBarRenderer {
 						v.draw(at: NSPoint(x: c.x + c.w + 3, y: (h - v.size().height) / 2))
 					}
 				}
-				if warn { warnText.draw(at: NSPoint(x: width - warnText.size().width, y: (h - warnText.size().height) / 2)) }
 			}
 			return true
 		}

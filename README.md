@@ -39,7 +39,8 @@ Free · open source (MIT) · signed & notarized · macOS 14+ · Apple Silicon & 
 The numbers come from the same usage endpoint that claude.ai and Claude Code's `/usage`
 use (`GET https://api.anthropic.com/api/oauth/usage`). It's undocumented, so it may
 change; Headroom decodes every field as optional and keeps the last good numbers if a
-refresh fails.
+refresh fails. It refreshes every minute; if Anthropic rate-limits it (HTTP 429), it checks
+every 2 minutes for 15 minutes, then goes back to every minute.
 
 ## Build from source
 
@@ -62,7 +63,7 @@ The website images are rendered from the real views: `./scripts/screens.sh`.
 |------|------|
 | `ClaudeUsage.swift` | Fetches and parses the usage endpoint. |
 | `TokenStore.swift` | Claude Code Keychain login, or a pasted token in Headroom's Keychain item. |
-| `UsageStore.swift` | Polling (every 60 s), pinned stats, menu bar style. |
+| `UsageStore.swift` | Polling (every minute, slowing to 2 min after a 429), pinned stats, menu bar style. |
 | `MenuBarRenderer.swift` | Draws the logo or the pinned stats in the chosen style. |
 | `StatusItemController.swift` | The menu bar item and its popover. |
 | `PopoverView.swift` | The popup UI. |

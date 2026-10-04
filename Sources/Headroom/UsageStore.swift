@@ -73,31 +73,54 @@ final class UsageStore: ObservableObject {
 		if on { if !pinned.contains(id) { pinned.append(id) } } else { pinned.removeAll { $0 == id } }
 	}
 
-	// real data every 60s, same cadence as the console tile
+	// MARK: polling
+	// Every minute. When the endpoint rate-limits us (429, e.g. other apps poll
+	// it too), check every 2 minutes for the next 15, then go back to every
+	// minute on our own. Another 429 restarts the 15 minutes.
+	static let fastInterval: TimeInterval = 60
+	static let slowInterval: TimeInterval = 120
+	static let slowFor: TimeInterval = 15 * 60
+	@Published private(set) var slowUntil: Date?
+	private var nextFetch = Date.distantPast // no automatic fetch before this
+
+	var isSlowedDown: Bool { (slowUntil ?? .distantPast) > Date() }
+	// manual refreshes are instant, except while slowed down
+	var canRefreshNow: Bool { !isSlowedDown || Date() >= nextFetch }
+
 	func start() {
 		refresh()
 		timer?.invalidate()
-		timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-			Task { @MainActor in self?.refresh() }
+		// tick often; refresh() decides whether a fetch is due
+		timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+			Task { @MainActor in self?.refresh(manual: false) }
 		}
 	}
 
-	func refresh() {
+	func refresh(manual: Bool = true) {
 		guard !loading else { return }
+		if (!manual || isSlowedDown), Date() < nextFetch { return }
 		loading = true
 		Task {
 			let r = await ClaudeUsage.fetch()
 			loading = false
+			let now = Date()
+			var wait: TimeInterval = 0
 			switch r {
 			case .success(let snap):
 				snapshot = snap
 				error = nil
-				lastUpdated = Date()
+				lastUpdated = now
 				log("ok")
 			case .failure(let e):
+				if case .rateLimited(let after) = e {
+					slowUntil = now.addingTimeInterval(Self.slowFor)
+					wait = after ?? 0 // the server's Retry-After, if longer than our interval
+				}
 				error = e // keep showing the last good data on transient errors
 				log(e.label)
 			}
+			let interval = (slowUntil ?? .distantPast) > now ? Self.slowInterval : Self.fastInterval
+			nextFetch = now.addingTimeInterval(max(interval, wait))
 		}
 	}
 

@@ -39,7 +39,7 @@ MainActor.assumeIsolated {
 		cases.append(("meterText-timeleft", bar.pinnedStats, .meterText))
 		for (label, stats, style) in cases {
 			for _ in 0..<2 { // first pass warms up the button
-				MenuBarRenderer.apply(to: b, stats: stats, style: style, warn: false, tooltip: "")
+				MenuBarRenderer.apply(to: b, stats: stats, style: style, tooltip: "")
 				b.sizeToFit(); b.layoutSubtreeIfNeeded()
 				RunLoop.main.run(until: Date().addingTimeInterval(0.05))
 			}

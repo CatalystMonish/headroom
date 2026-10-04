@@ -52,8 +52,7 @@ final class StatusItemController: NSObject {
 
 	private func redraw() {
 		guard let button = item.button else { return }
-		MenuBarRenderer.apply(to: button, stats: usage.pinnedStats, style: usage.barStyle,
-		                      warn: usage.error != nil, tooltip: tooltip())
+		MenuBarRenderer.apply(to: button, stats: usage.pinnedStats, style: usage.barStyle, tooltip: tooltip())
 	}
 
 	private func tooltip() -> String {
@@ -61,7 +60,11 @@ final class StatusItemController: NSObject {
 			let reset = ClaudeUsage.formatReset(s.resetsAt)
 			return "\(s.label): \(s.value)" + (reset.isEmpty ? "" : " · resets \(reset)")
 		}
-		if let e = usage.error { lines.append(usage.isStale ? "Stale: \(e.label)" : "Claude: \(e.label)") }
+		if usage.isSlowedDown {
+			lines.append("Checking every 2 min for a bit (rate limited)")
+		} else if let e = usage.error {
+			lines.append(usage.isStale ? "Stale: \(e.label)" : "Claude: \(e.label)")
+		}
 		return lines.isEmpty ? "Headroom" : lines.joined(separator: "\n")
 	}
 }
