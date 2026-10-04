@@ -22,8 +22,8 @@ Free · open source (MIT) · signed & notarized · macOS 14+ · Apple Silicon & 
   green, then amber at 70%, then red at 90%.
 - **Pin any stat to the menu bar** with its checkbox. With nothing pinned, Headroom is
   just a small logo.
-- **Time left or name:** the clock next to each stat shows its time left (`3h 11m`) in
-  the menu bar instead of its name. On by default.
+- **Menu bar labels:** show each stat by its segment (`5h`, `7d`, `Fable`, the default) or by
+  its time left (`3h 11m`).
 - **Five styles:** Text, Color, Meter, Meter + %, and speedometer-style Dial.
 - **Reset countdowns**, plus this week's split by surface (Claude Code, Chats, …).
 - **Private:** no analytics, no servers. The only network requests go to

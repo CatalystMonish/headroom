@@ -31,9 +31,6 @@ struct PopoverView: View {
 							StatRow(stat: stat, pinned: Binding(
 								get: { usage.isPinned(stat.id) },
 								set: { usage.setPinned(stat.id, $0) }
-							), timeLeft: Binding(
-								get: { usage.showsTimeLeft(stat.id) },
-								set: { usage.setShowsTimeLeft(stat.id, $0) }
 							))
 						}
 					}
@@ -41,15 +38,24 @@ struct PopoverView: View {
 				if let shares = breakdownText {
 					Text(shares).font(.caption2).foregroundStyle(.secondary)
 				}
-				Text("Tick a stat to show it in the menu bar. The clock shows its time left instead of its name.")
+				Text("Tick a stat to show it in the menu bar.")
 					.font(.caption2).foregroundStyle(.tertiary)
-					.fixedSize(horizontal: false, vertical: true)
 			}
 
 			VStack(alignment: .leading, spacing: 4) {
 				Text("Menu bar style").font(.caption).foregroundStyle(.secondary)
 				Picker("Menu bar style", selection: $usage.barStyle) {
 					ForEach(BarStyle.allCases) { Text($0.title).tag($0) }
+				}
+				.pickerStyle(.segmented)
+				.labelsHidden()
+				.controlSize(.small)
+			}
+
+			VStack(alignment: .leading, spacing: 4) {
+				Text("Menu bar labels").font(.caption).foregroundStyle(.secondary)
+				Picker("Menu bar labels", selection: $usage.labelMode) {
+					ForEach(LabelMode.allCases) { Text($0.title).tag($0) }
 				}
 				.pickerStyle(.segmented)
 				.labelsHidden()
@@ -136,7 +142,6 @@ private struct AccountView: View {
 private struct StatRow: View {
 	let stat: UsageStat
 	@Binding var pinned: Bool
-	@Binding var timeLeft: Bool
 
 	var body: some View {
 		HStack(spacing: 8) {
@@ -144,15 +149,7 @@ private struct StatRow: View {
 				.toggleStyle(.checkbox)
 				.labelsHidden()
 				.help("Show in menu bar")
-			// menubar label: time left (on) or the stat's name (off)
-			Button { timeLeft.toggle() } label: {
-				Image(systemName: timeLeft && stat.resetsAt != nil ? "clock.fill" : "clock")
-			}
-			.buttonStyle(.borderless)
-			.foregroundStyle(timeLeft && stat.resetsAt != nil ? .primary : .tertiary)
-			.disabled(stat.resetsAt == nil)
-			.help(timeLeft ? "Menu bar shows the time left. Click to show the name instead." : "Menu bar shows the name. Click to show the time left instead.")
-			Text(stat.label).font(.caption).lineLimit(1).frame(width: 78, alignment: .leading)
+			Text(stat.label).font(.caption).lineLimit(1).frame(width: 84, alignment: .leading)
 			Meter(percent: stat.percent, color: stat.dimmed ? .secondary : Color(nsColor: ClaudeUsage.severityColor(stat.percent)))
 			Text(stat.value).font(.caption.monospacedDigit()).bold()
 				.foregroundStyle(stat.dimmed ? .secondary : .primary)

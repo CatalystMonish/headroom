@@ -28,12 +28,15 @@ MainActor.assumeIsolated {
 		let b = item.button!
 		b.appearance = NSAppearance(named: mode)
 		// the menubar gets its stats from the store, exactly as the app does
-		// (pinned ones only, labelled with their time left by default)
+		// (pinned ones only, labelled per the label mode)
 		let bar = UsageStore()
 		bar.snapshot = snap
 		bar.pinned = pins
+		bar.labelMode = .segment // explicit: the render tool keeps its own saved prefs
 		var cases: [(String, [UsageStat], BarStyle)] = [("logo", [], .meterText)]
 		for s in BarStyle.allCases { cases.append((s.rawValue, bar.pinnedStats, s)) }
+		bar.labelMode = .timeLeft
+		cases.append(("meterText-timeleft", bar.pinnedStats, .meterText))
 		for (label, stats, style) in cases {
 			for _ in 0..<2 { // first pass warms up the button
 				MenuBarRenderer.apply(to: b, stats: stats, style: style, warn: false, tooltip: "")
@@ -46,7 +49,7 @@ MainActor.assumeIsolated {
 
 		let usage = UsageStore()
 		usage.snapshot = snap; usage.lastUpdated = Date().addingTimeInterval(-12)
-		usage.pinned = pins; usage.barStyle = .dial
+		usage.labelMode = .segment; usage.pinned = pins; usage.barStyle = .dial
 		let host = NSHostingView(rootView: PopoverView().environmentObject(usage))
 		host.appearance = NSAppearance(named: mode)
 		let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 320, height: 800), styleMask: [.borderless], backing: .buffered, defer: false)

@@ -15,6 +15,18 @@ enum BarStyle: String, CaseIterable, Identifiable {
 	}
 }
 
+// What labels each pinned stat in the menubar.
+enum LabelMode: String, CaseIterable, Identifiable {
+	case segment, timeLeft
+	var id: String { rawValue }
+	var title: String {
+		switch self {
+		case .segment: "Segment (5h · 7d)"
+		case .timeLeft: "Time left (3h 11m)"
+		}
+	}
+}
+
 // Polls the Claude usage endpoint and holds the menubar prefs (which stats are
 // pinned, and how they're drawn). Prefs live in UserDefaults, not config.json —
 // they're companion-only, like suitePath.
@@ -31,10 +43,8 @@ final class UsageStore: ObservableObject {
 	@Published var barStyle: BarStyle {
 		didSet { UserDefaults.standard.set(barStyle.rawValue, forKey: "barStyle") }
 	}
-	// Stats labelled by name in the menubar. Every other stat shows its time
-	// left ("3h 11m") instead; storing the opt-outs makes that the default.
-	@Published var nameLabels: [String] {
-		didSet { UserDefaults.standard.set(nameLabels, forKey: "nameLabels") }
+	@Published var labelMode: LabelMode {
+		didSet { UserDefaults.standard.set(labelMode.rawValue, forKey: "labelMode") }
 	}
 
 	private var timer: Timer?
@@ -42,23 +52,18 @@ final class UsageStore: ObservableObject {
 	init() {
 		pinned = UserDefaults.standard.stringArray(forKey: "pinnedStats") ?? [] // nothing pinned: the menubar shows the logo
 		barStyle = BarStyle(rawValue: UserDefaults.standard.string(forKey: "barStyle") ?? "") ?? .meterText
-		nameLabels = UserDefaults.standard.stringArray(forKey: "nameLabels") ?? []
+		labelMode = LabelMode(rawValue: UserDefaults.standard.string(forKey: "labelMode") ?? "") ?? .segment
 	}
 
 	var stats: [UsageStat] { snapshot?.stats ?? [] }
-	// pinned stats as the menubar labels them: time left, or name
+	// pinned stats as the menubar labels them: the segment ("5h"), or the time left ("3h 11m")
 	var pinnedStats: [UsageStat] {
 		stats.filter { pinned.contains($0.id) }.map { s in
-			guard showsTimeLeft(s.id), s.resetsAt != nil else { return s }
+			guard labelMode == .timeLeft, s.resetsAt != nil else { return s }
 			var s = s
 			s.short = ClaudeUsage.formatReset(s.resetsAt)
 			return s
 		}
-	}
-
-	func showsTimeLeft(_ id: String) -> Bool { !nameLabels.contains(id) }
-	func setShowsTimeLeft(_ id: String, _ on: Bool) {
-		if on { nameLabels.removeAll { $0 == id } } else if !nameLabels.contains(id) { nameLabels.append(id) }
 	}
 	// last good data is still on screen, but the latest fetch failed
 	var isStale: Bool { snapshot != nil && error != nil }
